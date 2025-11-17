@@ -1,0 +1,72 @@
+services:
+  # Database Layer - MongoDB
+  database:
+    image: mongo:6.0
+    container_name: dsi-anthropometry-database
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+    environment:
+      - MONGO_INITDB_DATABASE=anthropometry
+    restart: unless-stopped
+
+  # Backend Layer - Python Flask API + ML Model
+  backend:
+    build:
+      context: ./application/ml_cv
+      dockerfile: Dockerfile
+    container_name: dsi-anthropometry-backend
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./application/ml_cv/uploads:/app/uploads
+      - ./application/ml_cv/model:/app/model
+    networks:
+      - app-network
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=api_server.py
+      - PORT=5000
+      - CORS_ORIGINS=http://localhost:8081,http://frontend:8081
+    restart: unless-stopped
+
+  # Frontend Layer - React Native Expo Web
+  frontend:
+    build:
+      context: ./application
+      dockerfile: Dockerfile
+    container_name: dsi-anthropometry-frontend
+    ports:
+      - "8081:8081"   # Expo web
+      - "19000:19000" # Expo DevTools
+      - "19001:19001" # Metro bundler
+      - "19002:19002" # Metro bundler websocket
+    volumes:
+      - ./application:/app
+      - /app/node_modules
+      - /app/.expo
+    networks:
+      - app-network
+    environment:
+      - EXPO_PUBLIC_API_URL=http://192.168.137.242:5001
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+      - REACT_NATIVE_PACKAGER_HOSTNAME=192.168.137.242
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+# Docker network for inter-container communication
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Persistent volumes
+volumes:
+  mongo-data:
+    driver: local
