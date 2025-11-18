@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -42,9 +43,10 @@ const LoginRegisterScreen: React.FC<Props> = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  // Role selection for registration; default to 'patient'
-  const [role, setRole] = useState<'patient' | 'doctor'>('patient');
+  // Role selection for registration; default to 'parent'
+  const [role, setRole] = useState<'parent' | 'doctor' | 'healthcare_worker'>('parent');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
@@ -117,6 +119,7 @@ const LoginRegisterScreen: React.FC<Props> = ({ onLoginSuccess }) => {
           email: userCredential.user.email,
           role,
           createdAt: serverTimestamp(),
+          profileCompleted: false, // Track if user has filled their profile
         });
       } catch (fireErr) {
         console.error('Failed to save user role to Firestore:', fireErr);
@@ -124,10 +127,20 @@ const LoginRegisterScreen: React.FC<Props> = ({ onLoginSuccess }) => {
         Alert.alert('Warning', 'Registered but failed to save role. Try again later.');
       }
 
-      Alert.alert('Success', `Registered as ${userCredential.user.email}`);
-      setEmail('');
-      setPassword('');
-      setIsRegister(false);
+      Alert.alert(
+        'Success! 🎉', 
+        'Account created! Please complete your profile to get started.',
+        [
+          {
+            text: 'Complete Profile',
+            onPress: () => {
+              setEmail('');
+              setPassword('');
+              router.replace('/profile');
+            }
+          }
+        ]
+      );
     } catch (err: unknown) {
       console.error(err);
       const message = (err as any)?.message?.replace?.('Firebase: ', '') || 'Registration failed';
@@ -201,13 +214,25 @@ const LoginRegisterScreen: React.FC<Props> = ({ onLoginSuccess }) => {
           style={styles.input}
         />
 
-        <TextInput
-          placeholder="Password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          style={styles.input}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            placeholder="Password"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+            style={styles.passwordInput}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.eyeIcon}
+          >
+            <Ionicons
+              name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+              size={24}
+              color="#666"
+            />
+          </TouchableOpacity>
+        </View>
 
         {isRegister && (
           <>
@@ -216,17 +241,34 @@ const LoginRegisterScreen: React.FC<Props> = ({ onLoginSuccess }) => {
               <TouchableOpacity
                 style={[
                   styles.roleButton,
-                  role === 'patient' ? styles.roleButtonActive : undefined,
+                  role === 'parent' ? styles.roleButtonActive : undefined,
                 ]}
-                onPress={() => setRole('patient')}
+                onPress={() => setRole('parent')}
               >
                 <Text
                   style={[
                     styles.roleText,
-                    role === 'patient' ? styles.roleTextActive : undefined,
+                    role === 'parent' ? styles.roleTextActive : undefined,
                   ]}
                 >
-                  Patient
+                  Parent
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.roleButton,
+                  role === 'healthcare_worker' ? styles.roleButtonActive : undefined,
+                ]}
+                onPress={() => setRole('healthcare_worker')}
+              >
+                <Text
+                  style={[
+                    styles.roleText,
+                    role === 'healthcare_worker' ? styles.roleTextActive : undefined,
+                  ]}
+                >
+                  Healthcare Worker
                 </Text>
               </TouchableOpacity>
 
@@ -313,6 +355,24 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     marginTop: 10,
+  },
+  passwordContainer: {
+    position: 'relative',
+    marginTop: 10,
+  },
+  passwordInput: {
+    borderWidth: 1,
+    borderColor: '#e4e4e7',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    paddingRight: 50,
+    borderRadius: 8,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 12,
+    top: '50%',
+    transform: [{ translateY: -12 }],
   },
   actionButton: {
     backgroundColor: '#0b6cff',
