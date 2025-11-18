@@ -63,6 +63,13 @@ export default function TabsLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="growth_chart"
+        options={{ 
+          title: "Growth Chart",
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

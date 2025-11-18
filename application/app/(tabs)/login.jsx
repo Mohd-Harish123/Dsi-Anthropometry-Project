@@ -25,12 +25,12 @@ export default function Login() {
               defaultValue="any-password"
             />
 
-            {/* Patient Login */}
+            {/* Health Worker Login */}
             <TouchableOpacity
-              style={[styles.roleButton, styles.patientButton]}
+              style={[styles.roleButton, styles.healthWorkerButton]}
               onPress={() => router.push("dashboard")}
             >
-              <Text style={styles.roleButtonText}>Patient Login</Text>
+              <Text style={styles.roleButtonText}>Health Worker Login</Text>
             </TouchableOpacity>
 
             {/* Doctor Login */}
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  patientButton: {
+  healthWorkerButton: {
     backgroundColor: "#7f5539",
   },
 

@@ -6,13 +6,15 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "ap",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "userInterfaceStyle": "light",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "This app needs access to your photos to analyze images.",
-        "NSCameraUsageDescription": "This app needs access to your camera to take photos for analysis."
+        "NSCameraUsageDescription": "This app needs access to your camera to take photos for analysis.",
+        "UIUserInterfaceStyle": "Light"
       }
     },
     "android": {
